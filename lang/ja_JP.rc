@@ -31,7 +31,7 @@ FONT 10, "MS UI Gothic"
 STRINGTABLE
 {
     IDS_APPNAME, "txt2qr"
-    IDS_VERSIONINFO, "txt2qr バージョン 0.6\r\n\r\nCopyright (C) 2020 片山博文MZ. All Rights Reserved.\r\n\r\n本体価格700円のシェアウェアです。ベクターで購入して下さい。"
+    IDS_VERSIONINFO, "txt2qr バージョン 0.6\n\nCopyright (C) 2020 片山博文MZ. All Rights Reserved.\n\n本体価格700円のシェアウェアです。ベクターで購入して下さい。"
     IDS_SAVEFAIL, "保存に失敗しました。"
     IDS_EXECFAIL, "qrencode の実行に失敗しました。"
     IDS_COPYFAIL, "コピーに失敗しました。"

@@ -31,7 +31,7 @@ FONT 10, "Tahoma"
 STRINGTABLE
 {
     IDS_APPNAME, "txt2qr"
-    IDS_VERSIONINFO, "txt2qr Version 0.6\r\n\r\nCopyright (C) 2020 Katayama Hirofumi MZ. All Rights Reserved."
+    IDS_VERSIONINFO, "txt2qr Version 0.6\n\nCopyright (C) 2020 Katayama Hirofumi MZ. All Rights Reserved."
     IDS_SAVEFAIL, "Failed to save."
     IDS_EXECFAIL, "Failed to execute qrencode."
     IDS_COPYFAIL, "Failed to copy."
