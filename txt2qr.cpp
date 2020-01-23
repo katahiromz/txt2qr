@@ -65,6 +65,27 @@ LPWSTR MakeFilterDx(LPWSTR psz)
     return psz;
 }
 
+void DoTrimRight(std::wstring& str, const WCHAR *spaces)
+{
+    size_t j = str.find_last_not_of(spaces);
+    if (j == std::wstring::npos)
+    {
+        str.clear();
+    }
+    else
+    {
+        str = str.substr(0, j + 1);
+    }
+}
+
+template <INT siz>
+void DoTrimRight(WCHAR (&str)[siz], const WCHAR *spaces)
+{
+    std::wstring s = str;
+    DoTrimRight(s, spaces);
+    lstrcpynW(str, s.c_str(), siz);
+}
+
 template <typename T_STR>
 bool
 DoReplaceAll(T_STR& str, const T_STR& from, const T_STR& to)
@@ -499,6 +520,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     WCHAR szText[MAX_TEXT + 1];
     Edit_GetText(GetDlgItem(hwnd, edt1), szText, ARRAYSIZE(szText));
+    DoTrimRight(szText, L" \t\r\n");
 
     if (s_hbm1)
     {
