@@ -230,6 +230,9 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, INT nMode
     case 2:
         lstrcatW(szParams, L" --kanji");
         break;
+    case 3:
+        lstrcatW(szParams, L" --8bit");
+        break;
     }
 
     std::wstring text = pszText;
@@ -683,6 +686,7 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     ComboBox_AddString(hCmb1, LoadStringDx(IDS_ASCII));
     ComboBox_AddString(hCmb1, LoadStringDx(IDS_ICASEASCII));
     ComboBox_AddString(hCmb1, LoadStringDx(IDS_JPNSHIFTJIS));
+    ComboBox_AddString(hCmb1, LoadStringDx(IDS_8BIT));
     ComboBox_SetCurSel(hCmb1, 2);
 
     INT argc = 0;

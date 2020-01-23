@@ -58,6 +58,7 @@ STRINGTABLE
     IDS_ASCII, "ASCII"
     IDS_ICASEASCII, "ASCII (Ignore case)"
     IDS_JPNSHIFTJIS, "日本語シフトJIS"
+    IDS_8BIT, "8 ビット"
 }
 
 //////////////////////////////////////////////////////////////////////////////
