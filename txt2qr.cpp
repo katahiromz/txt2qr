@@ -207,10 +207,8 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKan
     {
         WaitForSingleObject(info.hProcess, INFINITE);
         CloseHandle(info.hProcess);
-        SetForegroundWindow(hwnd);
         return TRUE;
     }
-    SetForegroundWindow(hwnd);
     return FALSE;
 }
 
@@ -500,6 +498,8 @@ unsigned __stdcall DoThreadFunc(void *arg)
         EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
     }
 
+    SetForegroundWindow(hwnd);
+
     BOOL bUpdated = s_bUpdatedInProcessing;
     s_bInProcessing = FALSE;
     s_bUpdatedInProcessing = FALSE;
@@ -753,6 +753,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case edt1:
         if (codeNotify == EN_CHANGE)
+        {
+            OnEditChange(hwnd);
+        }
+        break;
+    case chx1:
+        if (codeNotify == BN_CLICKED)
         {
             OnEditChange(hwnd);
         }
