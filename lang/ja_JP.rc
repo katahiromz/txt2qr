@@ -43,7 +43,7 @@ STRINGTABLE
     IDS_SAVEIMGAS, "画像に名前を付けて保存"
     IDS_FILETOOLARGE, "ファイルが大きすぎます。"
     IDS_CANTOPENFILE, "ファイルが開けません。"
-    IDS_CHARACTERS, "(%u字)"
+    IDS_CHARACTERS, "%u 字"
 }
 
 //////////////////////////////////////////////////////////////////////////////

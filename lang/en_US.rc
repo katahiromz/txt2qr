@@ -43,7 +43,7 @@ STRINGTABLE
     IDS_SAVEIMGAS, "Save Image As"
     IDS_FILETOOLARGE, "File is too large."
     IDS_CANTOPENFILE, "Unable to open file."
-    IDS_CHARACTERS, "(%u chars)"
+    IDS_CHARACTERS, "%u characters"
 }
 
 //////////////////////////////////////////////////////////////////////////////
