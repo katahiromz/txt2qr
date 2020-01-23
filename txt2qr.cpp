@@ -499,7 +499,6 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     WCHAR szText[MAX_TEXT + 1];
     Edit_GetText(GetDlgItem(hwnd, edt1), szText, ARRAYSIZE(szText));
-    StrTrimW(szText, L" \t\r\n");
 
     if (s_hbm1)
     {
