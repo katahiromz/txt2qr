@@ -40,6 +40,7 @@ Source: "build\txt2qr.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\qrencode.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "HISTORY.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\msys32\libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\msys32\libpng16-16.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\msys32\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -50,6 +51,7 @@ Source: "..\msys32\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\README.txt"; Filename: "{app}\README.txt"
 Name: "{group}\LICENSE.txt"; Filename: "{app}\LICENSE.txt"
+Name: "{group}\HISTORY.txt"; Filename: "{app}\HISTORY.txt"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
