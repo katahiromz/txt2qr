@@ -222,7 +222,6 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKan
         lstrcatW(szParams, L" --kanji");
 
     std::wstring text = pszText;
-    DoReplaceAll(text, L"\n", L" ");
     DoReplaceAll(text, L"\r", L"");
     DoReplaceAll(text, L"\"", L"\"\"");
 
