@@ -204,7 +204,7 @@ HBITMAP DoLoadPngAsBitmap(LPCWSTR pszFileName)
     return hbm;
 }
 
-BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKanji)
+BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, INT nMode)
 {
     WCHAR szPath[MAX_PATH];
     WCHAR szParams[512];
@@ -218,8 +218,19 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKan
     lstrcatW(szParams, pszOutFile);
     lstrcatW(szParams, L"\"");
 
-    if (bKanji)
+    lstrcatW(szParams, L" -l M");
+
+    switch (nMode)
+    {
+    case 0:
+        break;
+    case 1:
+        lstrcatW(szParams, L" --ignorecase");
+        break;
+    case 2:
         lstrcatW(szParams, L" --kanji");
+        break;
+    }
 
     std::wstring text = pszText;
     DoReplaceAll(text, L"\r", L"");
@@ -460,6 +471,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
     assert(s_bInProcessing);
 
     EnableWindow(GetDlgItem(hwnd, edt1), FALSE);
+    EnableWindow(GetDlgItem(hwnd, cmb1), FALSE);
     EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
     EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
     EnableWindow(GetDlgItem(hwnd, psh2), FALSE);
@@ -488,11 +500,11 @@ unsigned __stdcall DoThreadFunc(void *arg)
             break;
         }
 
-        BOOL bKanji = (IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED);
+        INT nMode = (INT)SendDlgItemMessage(hwnd, cmb1, CB_GETCURSEL, 0, 0);
 
         DeleteFileW(s_szTempFile);
 
-        if (!DoExecuteQrEncode(hwnd, szText, s_szTempFile, bKanji))
+        if (!DoExecuteQrEncode(hwnd, szText, s_szTempFile, nMode))
         {
             break;
         }
@@ -518,6 +530,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
     SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
 
     EnableWindow(GetDlgItem(hwnd, edt1), TRUE);
+    EnableWindow(GetDlgItem(hwnd, cmb1), TRUE);
     EnableWindow(GetDlgItem(hwnd, psh2), TRUE);
     EnableWindow(GetDlgItem(hwnd, IDCANCEL), TRUE);
 
@@ -658,7 +671,6 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)s_hIconSmall);
 
     Edit_LimitText(GetDlgItem(hwnd, edt1), MAX_TEXT);
-    CheckDlgButton(hwnd, chx1, BST_CHECKED);
 
     s_fnEditWndProc = SubclassWindow(GetDlgItem(hwnd, edt1), EditWindowProc);
 
@@ -666,6 +678,12 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
     EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
     EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
+
+    HWND hCmb1 = GetDlgItem(hwnd, cmb1);
+    ComboBox_AddString(hCmb1, LoadStringDx(IDS_ASCII));
+    ComboBox_AddString(hCmb1, LoadStringDx(IDS_ICASEASCII));
+    ComboBox_AddString(hCmb1, LoadStringDx(IDS_JPNSHIFTJIS));
+    ComboBox_SetCurSel(hCmb1, 2);
 
     INT argc = 0;
     LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -808,8 +826,8 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             OnEditChange(hwnd);
         }
         break;
-    case chx1:
-        if (codeNotify == BN_CLICKED)
+    case cmb1:
+        if (codeNotify == CBN_SELCHANGE)
         {
             OnEditChange(hwnd);
         }

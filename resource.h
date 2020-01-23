@@ -24,6 +24,9 @@
 #define IDS_FILETOOLARGE                    110
 #define IDS_CANTOPENFILE                    111
 #define IDS_CHARACTERS                      112
+#define IDS_ASCII                           113
+#define IDS_ICASEASCII                      114
+#define IDS_JPNSHIFTJIS                     115
 
 #define ID_COPY                             100
 
