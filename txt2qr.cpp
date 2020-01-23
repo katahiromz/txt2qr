@@ -12,6 +12,8 @@
 #include <cassert>
 #include "resource.h"
 
+#define MAX_TEXT 255
+
 #include <png.h>
 //#pragma comment(lib, "libpng.lib")
 //#pragma comment(lib, "zlib.lib")
@@ -293,128 +295,74 @@ void DoShowPlaceHolder(HWND hwnd)
     }
 }
 
-LRESULT CALLBACK
-EditWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void DoSwapEndian(LPBYTE pb, DWORD cb)
 {
-    switch (uMsg)
+    while (cb >= 2)
     {
-    case WM_PAINT:
-        CallWindowProc(s_fnEditWndProc, hwnd, uMsg, wParam, lParam);
-        if (GetWindowTextLength(hwnd) == 0)
-        {
-            DoShowPlaceHolder(hwnd);
-        }
-        return 0;
-    }
+        BYTE b = *pb;
+        *pb = pb[1];
+        pb[1] = b;
 
-    return CallWindowProc(s_fnEditWndProc, hwnd, uMsg, wParam, lParam);
-}
-
-BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
-{
-    s_hIcon = LoadIcon(s_hInstance, MAKEINTRESOURCE(IDI_MAIN));
-    s_hIconSmall = (HICON)LoadImageW(s_hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
-        GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-
-    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)s_hIcon);
-    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)s_hIconSmall);
-
-    Edit_LimitText(GetDlgItem(hwnd, edt1), 255);
-    CheckDlgButton(hwnd, chx1, BST_CHECKED);
-
-    s_fnEditWndProc = SubclassWindow(GetDlgItem(hwnd, edt1), EditWindowProc);
-
-    return TRUE;
-}
-
-void OnCopy(HWND hwnd)
-{
-    if (!s_hbm1 || s_bInProcessing)
-        return;
-
-    BOOL bOK = FALSE;
-    if (OpenClipboard(hwnd))
-    {
-        EmptyClipboard();
-
-        std::vector<BYTE> dib;
-        DoGetDIBFromBitmap(dib, s_hbm1);
-
-        if (HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, dib.size()))
-        {
-            if (LPVOID pv = GlobalLock(hGlobal))
-            {
-                CopyMemory(pv, dib.data(), dib.size());
-                GlobalUnlock(hGlobal);
-
-                bOK = !!SetClipboardData(CF_DIB, hGlobal);
-            }
-
-            if (!bOK)
-                GlobalFree(hGlobal);
-        }
-
-        DWORD cbDrop = sizeof(DROPFILES) + (lstrlenW(s_szTempFile) + 2) * sizeof(WCHAR);
-        if (HDROP hDrop = (HDROP)GlobalAlloc(GHND | GMEM_SHARE, cbDrop))
-        {
-            if (LPDROPFILES pDropFiles = (LPDROPFILES)GlobalLock(hDrop))
-            {
-                pDropFiles->pFiles = sizeof(DROPFILES);
-                pDropFiles->pt.x = -1;
-                pDropFiles->pt.y = -1;
-                pDropFiles->fNC = TRUE;
-                pDropFiles->fWide = TRUE;
-                LPWSTR pszz = LPWSTR(pDropFiles + 1);
-
-                LPWSTR pch = pszz;
-                lstrcpyW(pch, s_szTempFile);
-                pch += lstrlenW(pch) + 1;
-                *pch = 0;
-                ++pch;
-                assert((void *)pch == LPBYTE(pDropFiles) + cbDrop);
-
-                GlobalUnlock(hDrop);
-
-                SetClipboardData(CF_HDROP, hDrop);
-            }
-        }
-
-        CloseClipboard();
-    }
-
-    if (bOK)
-    {
-        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(106));
-        SetTimer(hwnd, 999, 2000, NULL);
-    }
-    else
-    {
-        MessageBoxW(hwnd, LoadStringDx(104), LoadStringDx(100), MB_ICONERROR);
+        pb += 2;
+        cb -= 2;
     }
 }
 
-void OnSaveAs(HWND hwnd)
+std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
 {
-    if (s_bInProcessing || !PathFileExistsW(s_szTempFile))
-        return;
+    WCHAR szText[MAX_TEXT + 1] = { 0 };
 
-    WCHAR szFile[MAX_PATH] = L"";
-    OPENFILENAMEW ofn = { OPENFILENAME_SIZE_VERSION_400W };
-    ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter = MakeFilterDx(LoadStringDx(108));
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = ARRAYSIZE(szFile);
-    ofn.lpstrTitle = LoadStringDx(109);
-    ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT |
-                OFN_PATHMUSTEXIST | OFN_ENABLESIZING;
-    ofn.lpstrDefExt = L"png";
-    if (GetSaveFileNameW(&ofn))
+    // UTF-8 BOM
+    if (memcmp(pv, "\xEF\xBB\xBF", 3) == 0 && cb >= 3)
     {
-        if (!CopyFileW(s_szTempFile, szFile, FALSE))
+        BYTE *pb = (BYTE *)pv;
+        pb += 3;
+        cb -= 3;
+        if (MultiByteToWideChar(CP_UTF8, 0, (LPSTR)pb, cb,
+                                szText, ARRAYSIZE(szText)))
         {
-            MessageBoxW(hwnd, LoadStringDx(102), LoadStringDx(100), MB_ICONERROR);
+            return szText;
         }
     }
+
+    // UTF-16LE BOM
+    if (memcmp(pv, "\xFF\xFE", 2) == 0 && cb >= 2)
+    {
+        BYTE *pb = (BYTE *)pv;
+        pb += 2;
+        cb -= 2;
+        return (LPWSTR)pb;
+    }
+
+    // UTF-16BE BOM
+    if (memcmp(pv, "\xFE\xFF", 2) == 0 && cb >= 2)
+    {
+        BYTE *pb = (BYTE *)pv;
+        pb += 2;
+        cb -= 2;
+        DoSwapEndian(pb, cb);
+        return (LPWSTR)pb;
+    }
+
+    if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPSTR)pv, cb,
+                            szText, ARRAYSIZE(szText)))
+    {
+        return szText;
+    }
+
+    if (IsTextUnicode(pv, cb, NULL))
+    {
+        return (LPWSTR)pv;
+    }
+
+    ZeroMemory(szText, sizeof(szText));
+    if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, (LPSTR)pv, cb,
+                            szText, ARRAYSIZE(szText)))
+    {
+        return szText;
+    }
+
+    return L"";
 }
 
 unsigned __stdcall ProcessingFunc(void *arg)
@@ -428,7 +376,7 @@ unsigned __stdcall ProcessingFunc(void *arg)
     EnableWindow(GetDlgItem(hwnd, psh2), FALSE);
     EnableWindow(GetDlgItem(hwnd, IDCANCEL), FALSE);
 
-    WCHAR szText[256];
+    WCHAR szText[MAX_TEXT + 1];
     Edit_GetText(GetDlgItem(hwnd, edt1), szText, ARRAYSIZE(szText));
     StrTrimW(szText, L" \t");
 
@@ -523,6 +471,172 @@ void OnEditChange(HWND hwnd)
     }
 }
 
+BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
+{
+    HANDLE hFile = CreateFileW(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+                               OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return FALSE;
+    }
+
+    BOOL bOK = FALSE;
+    DWORD cb = GetFileSize(hFile, NULL);
+    if (cb > MAX_TEXT * sizeof(WCHAR))
+        cb = MAX_TEXT * sizeof(WCHAR);
+
+    DWORD cbRead;
+    BYTE ab[(MAX_TEXT + 1) * sizeof(WCHAR)] = { 0 };
+    if (ReadFile(hFile, ab, cb, &cbRead, NULL))
+    {
+        std::wstring str = DoReadBinaryText(hwnd, ab, cb);
+        if (str.size() > MAX_TEXT)
+            str.resize(MAX_TEXT);
+
+        SetDlgItemTextW(hwnd, edt1, str.c_str());
+        Edit_SetSel(GetDlgItem(hwnd, edt1), 0, -1);
+        OnEditChange(hwnd);
+        bOK = !str.empty();
+    }
+
+    CloseHandle(hFile);
+    return TRUE;
+}
+
+LRESULT CALLBACK
+EditWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        CallWindowProc(s_fnEditWndProc, hwnd, uMsg, wParam, lParam);
+        if (GetWindowTextLength(hwnd) == 0)
+        {
+            DoShowPlaceHolder(hwnd);
+        }
+        return 0;
+    }
+
+    return CallWindowProc(s_fnEditWndProc, hwnd, uMsg, wParam, lParam);
+}
+
+BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
+{
+    s_hIcon = LoadIcon(s_hInstance, MAKEINTRESOURCE(IDI_MAIN));
+    s_hIconSmall = (HICON)LoadImageW(s_hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
+        GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)s_hIcon);
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)s_hIconSmall);
+
+    Edit_LimitText(GetDlgItem(hwnd, edt1), 255);
+    CheckDlgButton(hwnd, chx1, BST_CHECKED);
+
+    s_fnEditWndProc = SubclassWindow(GetDlgItem(hwnd, edt1), EditWindowProc);
+
+    DragAcceptFiles(hwnd, TRUE);
+
+    INT argc = 0;
+    LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    if (argc >= 2)
+    {
+        DoOpenTextFile(hwnd, wargv[1]);
+    }
+    LocalFree(wargv);
+
+    return TRUE;
+}
+
+void OnCopy(HWND hwnd)
+{
+    if (!s_hbm1 || s_bInProcessing)
+        return;
+
+    BOOL bOK = FALSE;
+    if (OpenClipboard(hwnd))
+    {
+        EmptyClipboard();
+
+        std::vector<BYTE> dib;
+        DoGetDIBFromBitmap(dib, s_hbm1);
+
+        if (HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, dib.size()))
+        {
+            if (LPVOID pv = GlobalLock(hGlobal))
+            {
+                CopyMemory(pv, dib.data(), dib.size());
+                GlobalUnlock(hGlobal);
+
+                bOK = !!SetClipboardData(CF_DIB, hGlobal);
+            }
+
+            if (!bOK)
+                GlobalFree(hGlobal);
+        }
+
+        DWORD cbDrop = sizeof(DROPFILES) + (lstrlenW(s_szTempFile) + 2) * sizeof(WCHAR);
+        if (HDROP hDrop = (HDROP)GlobalAlloc(GHND | GMEM_SHARE, cbDrop))
+        {
+            if (LPDROPFILES pDropFiles = (LPDROPFILES)GlobalLock(hDrop))
+            {
+                pDropFiles->pFiles = sizeof(DROPFILES);
+                pDropFiles->pt.x = -1;
+                pDropFiles->pt.y = -1;
+                pDropFiles->fNC = TRUE;
+                pDropFiles->fWide = TRUE;
+                LPWSTR pszz = LPWSTR(pDropFiles + 1);
+
+                LPWSTR pch = pszz;
+                lstrcpyW(pch, s_szTempFile);
+                pch += lstrlenW(pch) + 1;
+                *pch = 0;
+                ++pch;
+                assert((void *)pch == LPBYTE(pDropFiles) + cbDrop);
+
+                GlobalUnlock(hDrop);
+
+                SetClipboardData(CF_HDROP, hDrop);
+            }
+        }
+
+        CloseClipboard();
+    }
+
+    if (bOK)
+    {
+        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(106));
+        SetTimer(hwnd, 999, 2000, NULL);
+    }
+    else
+    {
+        MessageBoxW(hwnd, LoadStringDx(104), LoadStringDx(100), MB_ICONERROR);
+    }
+}
+
+void OnSaveAs(HWND hwnd)
+{
+    if (s_bInProcessing || !PathFileExistsW(s_szTempFile))
+        return;
+
+    WCHAR szFile[MAX_PATH] = L"";
+    OPENFILENAMEW ofn = { OPENFILENAME_SIZE_VERSION_400W };
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFilter = MakeFilterDx(LoadStringDx(108));
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = ARRAYSIZE(szFile);
+    ofn.lpstrTitle = LoadStringDx(109);
+    ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT |
+                OFN_PATHMUSTEXIST | OFN_ENABLESIZING;
+    ofn.lpstrDefExt = L"png";
+    if (GetSaveFileNameW(&ofn))
+    {
+        if (!CopyFileW(s_szTempFile, szFile, FALSE))
+        {
+            MessageBoxW(hwnd, LoadStringDx(102), LoadStringDx(100), MB_ICONERROR);
+        }
+    }
+}
+
 void OnAbout(HWND hwnd)
 {
     if (s_bInProcessing)
@@ -575,6 +689,16 @@ void OnTimer(HWND hwnd, UINT id)
     }
 }
 
+void OnDropFiles(HWND hwnd, HDROP hdrop)
+{
+    WCHAR szFile[MAX_PATH];
+    szFile[0] = 0;
+    DragQueryFileW(hdrop, 0, szFile, ARRAYSIZE(szFile));
+
+    DoOpenTextFile(hwnd, szFile);
+    DragFinish(hdrop);
+}
+
 INT_PTR CALLBACK
 DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -583,6 +707,7 @@ DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         HANDLE_MSG(hwnd, WM_INITDIALOG, OnInitDialog);
         HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
         HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
+        HANDLE_MSG(hwnd, WM_DROPFILES, OnDropFiles);
     }
     return 0;
 }
