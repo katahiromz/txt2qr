@@ -58,7 +58,7 @@ STRINGTABLE
     IDS_CANTOPENFILE, "ファイルが開けません。"
     IDS_CHARACTERS, "%u 字"
     IDS_ASCII, "ASCII"
-    IDS_ICASEASCII, "ASCII (Ignore case)"
+    IDS_ICASEASCII, "ASCII (英字大小無視)"
     IDS_JPNSHIFTJIS, "日本語シフトJIS"
     IDS_8BIT, "8 ビット テキスト"
     IDS_L, "L"
