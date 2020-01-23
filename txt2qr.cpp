@@ -534,7 +534,10 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     SetForegroundWindow(hwnd);
 
-    INT cch = lstrlenW(szText);
+    std::wstring text = szText;
+    DoReplaceAll(text, L"\r", L"");
+
+    INT cch = lstrlenW(text.c_str());
     if (cch)
     {
         wsprintfW(szText, LoadStringDx(IDS_CHARACTERS), cch);
