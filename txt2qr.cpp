@@ -204,7 +204,9 @@ HBITMAP DoLoadPngAsBitmap(LPCWSTR pszFileName)
     return hbm;
 }
 
-BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, INT nMode)
+BOOL
+DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile,
+                  INT nMode, INT nQuality)
 {
     WCHAR szPath[MAX_PATH];
     WCHAR szParams[512];
@@ -218,7 +220,21 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, INT nMode
     lstrcatW(szParams, pszOutFile);
     lstrcatW(szParams, L"\"");
 
-    lstrcatW(szParams, L" -l M");
+    switch (nQuality)
+    {
+    case 0:
+        lstrcatW(szParams, L" -l L");
+        break;
+    case 1:
+        lstrcatW(szParams, L" -l M");
+        break;
+    case 2:
+        lstrcatW(szParams, L" -l Q");
+        break;
+    case 3:
+        lstrcatW(szParams, L" -l H");
+        break;
+    }
 
     switch (nMode)
     {
@@ -475,6 +491,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     EnableWindow(GetDlgItem(hwnd, edt1), FALSE);
     EnableWindow(GetDlgItem(hwnd, cmb1), FALSE);
+    EnableWindow(GetDlgItem(hwnd, cmb2), FALSE);
     EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
     EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
     EnableWindow(GetDlgItem(hwnd, psh2), FALSE);
@@ -504,10 +521,11 @@ unsigned __stdcall DoThreadFunc(void *arg)
         }
 
         INT nMode = (INT)SendDlgItemMessage(hwnd, cmb1, CB_GETCURSEL, 0, 0);
+        INT nQuality = (INT)SendDlgItemMessage(hwnd, cmb2, CB_GETCURSEL, 0, 0);
 
         DeleteFileW(s_szTempFile);
 
-        if (!DoExecuteQrEncode(hwnd, szText, s_szTempFile, nMode))
+        if (!DoExecuteQrEncode(hwnd, szText, s_szTempFile, nMode, nQuality))
         {
             break;
         }
@@ -534,6 +552,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     EnableWindow(GetDlgItem(hwnd, edt1), TRUE);
     EnableWindow(GetDlgItem(hwnd, cmb1), TRUE);
+    EnableWindow(GetDlgItem(hwnd, cmb2), TRUE);
     EnableWindow(GetDlgItem(hwnd, psh2), TRUE);
     EnableWindow(GetDlgItem(hwnd, IDCANCEL), TRUE);
 
@@ -689,6 +708,13 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     ComboBox_AddString(hCmb1, LoadStringDx(IDS_8BIT));
     ComboBox_SetCurSel(hCmb1, 2);
 
+    HWND hCmb2 = GetDlgItem(hwnd, cmb2);
+    ComboBox_AddString(hCmb2, LoadStringDx(IDS_L));
+    ComboBox_AddString(hCmb2, LoadStringDx(IDS_M));
+    ComboBox_AddString(hCmb2, LoadStringDx(IDS_Q));
+    ComboBox_AddString(hCmb2, LoadStringDx(IDS_H));
+    ComboBox_SetCurSel(hCmb2, 1);
+
     INT argc = 0;
     LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argc >= 2)
@@ -831,6 +857,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         }
         break;
     case cmb1:
+        if (codeNotify == CBN_SELCHANGE)
+        {
+            OnEditChange(hwnd);
+        }
+        break;
+    case cmb2:
         if (codeNotify == CBN_SELCHANGE)
         {
             OnEditChange(hwnd);

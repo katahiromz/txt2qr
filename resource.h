@@ -28,6 +28,10 @@
 #define IDS_ICASEASCII                      114
 #define IDS_JPNSHIFTJIS                     115
 #define IDS_8BIT                            116
+#define IDS_L                               117
+#define IDS_M                               118
+#define IDS_Q                               119
+#define IDS_H                               120
 
 #define ID_COPY                             100
 

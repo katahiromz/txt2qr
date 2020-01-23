@@ -30,6 +30,8 @@ FONT 11, "MS UI Gothic"
     RTEXT "", stc2, 70, 43, 60, 10
     EDITTEXT edt1, 5, 55, 210, 40, ES_WANTRETURN | ES_AUTOVSCROLL | ES_MULTILINE | WS_VSCROLL
     CONTROL "", stc1, "STATIC", SS_CENTERIMAGE | SS_NOTIFY | SS_BITMAP, 5, 100, 125, 125
+    LTEXT "エラー訂正(&E):", IDC_STATIC, 135, 100, 80, 8
+    COMBOBOX cmb2, 135, 110, 80, 300, CBS_HASSTRINGS | CBS_AUTOHSCROLL | CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON "コピー(&C)", IDOK, 135, 130, 80, 20
     PUSHBUTTON "保存(&S)...", psh1, 135, 155, 80, 20
     PUSHBUTTON "バージョン情報(&A)...", psh2, 135, 180, 80, 20
@@ -59,6 +61,10 @@ STRINGTABLE
     IDS_ICASEASCII, "ASCII (Ignore case)"
     IDS_JPNSHIFTJIS, "日本語シフトJIS"
     IDS_8BIT, "8 ビット テキスト"
+    IDS_L, "最低品質"
+    IDS_M, "中"
+    IDS_Q, "高品質"
+    IDS_H, "最高品質"
 }
 
 //////////////////////////////////////////////////////////////////////////////
