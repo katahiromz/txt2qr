@@ -65,6 +65,31 @@ LPWSTR MakeFilterDx(LPWSTR psz)
     return psz;
 }
 
+template <typename T_STR>
+bool
+DoReplaceAll(T_STR& str, const T_STR& from, const T_STR& to)
+{
+    bool ret = false;
+    size_t i = 0;
+    for (;;) {
+        i = str.find(from, i);
+        if (i == T_STR::npos)
+            break;
+        ret = true;
+        str.replace(i, from.size(), to);
+        i += to.size();
+    }
+    return ret;
+}
+template <typename T_STR>
+bool
+DoReplaceAll(T_STR& str,
+             const typename T_STR::value_type *from,
+             const typename T_STR::value_type *to)
+{
+    return DoReplaceAll(str, T_STR(from), T_STR(to));
+}
+
 BOOL DoGetTempPathName(LPWSTR pszPath)
 {
     WCHAR szTempPath[MAX_PATH];
@@ -196,8 +221,13 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKan
     if (bKanji)
         lstrcatW(szParams, L" --kanji");
 
+    std::wstring text = pszText;
+    DoReplaceAll(text, L"\n", L" ");
+    DoReplaceAll(text, L"\r", L"");
+    DoReplaceAll(text, L"\"", L"\"\"");
+
     lstrcatW(szParams, L" \"");
-    lstrcatW(szParams, pszText);
+    lstrcatW(szParams, text.c_str());
     lstrcatW(szParams, L"\"");
 
     SHELLEXECUTEINFOW info = { sizeof(info) };
