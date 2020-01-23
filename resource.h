@@ -9,6 +9,8 @@
 
 #define IDI_MAIN                            100
 
+#define IDR_POPUP                           100
+
 #define IDS_APPNAME                         100
 #define IDS_VERSIONINFO                     101
 #define IDS_SAVEFAIL                        102
@@ -23,11 +25,13 @@
 #define IDS_CANTOPENFILE                    111
 #define IDS_CHARACTERS                      112
 
+#define ID_COPY                             100
+
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
-        #define _APS_NEXT_RESOURCE_VALUE    100
-        #define _APS_NEXT_COMMAND_VALUE     100
+        #define _APS_NEXT_RESOURCE_VALUE    101
+        #define _APS_NEXT_COMMAND_VALUE     101
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

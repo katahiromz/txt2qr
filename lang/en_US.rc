@@ -6,6 +6,17 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 
 //////////////////////////////////////////////////////////////////////////////
+// RT_MENU
+
+IDR_POPUP MENU
+{
+    POPUP "(Popup)"
+    {
+        MENUITEM "&Copy", ID_COPY
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // RT_DIALOG
 
 IDD_MAIN DIALOG 0, 0, 220, 230
@@ -19,7 +30,7 @@ FONT 10, "Tahoma"
     LTEXT "&Text:", IDC_STATIC, 5, 43, 60, 10
     RTEXT "", stc2, 70, 43, 60, 10
     EDITTEXT edt1, 5, 55, 210, 40, ES_WANTRETURN | ES_AUTOVSCROLL | ES_MULTILINE | WS_VSCROLL
-    CONTROL "", stc1, "STATIC", SS_CENTERIMAGE | SS_BITMAP, 5, 100, 125, 125
+    CONTROL "", stc1, "STATIC", SS_CENTERIMAGE | SS_NOTIFY | SS_BITMAP, 5, 100, 125, 125
     DEFPUSHBUTTON "&Copy", IDOK, 135, 130, 80, 20
     PUSHBUTTON "&Save As...", psh1, 135, 155, 80, 20
     PUSHBUTTON "&About...", psh2, 135, 180, 80, 20

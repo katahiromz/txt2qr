@@ -790,6 +790,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case IDOK:
         OnCopy(hwnd);
         break;
+    case ID_COPY:
+        OnCopy(hwnd);
+        break;
     case IDCANCEL:
         EndDialog(hwnd, id);
         break;
@@ -861,6 +864,27 @@ void OnGetMinMaxInfo(HWND hwnd, LPMINMAXINFO lpMinMaxInfo)
     lpMinMaxInfo->ptMinTrackSize.y = s_cyMinTrack;
 }
 
+void OnContextMenu(HWND hwnd, HWND hwndContext, UINT xPos, UINT yPos)
+{
+    if (hwndContext == GetDlgItem(hwnd, stc1))
+    {
+        HMENU hMenu = LoadMenu(s_hInstance, MAKEINTRESOURCE(IDR_POPUP));
+        HMENU hSubMenu = GetSubMenu(hMenu, 0);
+
+        if (!IsWindowEnabled(GetDlgItem(hwnd, IDOK)))
+        {
+            EnableMenuItem(hMenu, ID_COPY, MF_BYCOMMAND | MF_GRAYED);
+        }
+
+        SetForegroundWindow(hwnd);
+        INT nCmd = TrackPopupMenuEx(hSubMenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+                                    xPos, yPos, hwnd, NULL);
+        DestroyMenu(hMenu);
+        PostMessage(hwnd, WM_COMMAND, nCmd, 0);
+        PostMessage(hwnd, WM_NULL, 0, 0);
+    }
+}
+
 INT_PTR CALLBACK
 DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -872,6 +896,7 @@ DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         HANDLE_MSG(hwnd, WM_DROPFILES, OnDropFiles);
         HANDLE_MSG(hwnd, WM_SIZE, OnSize);
         HANDLE_MSG(hwnd, WM_GETMINMAXINFO, OnGetMinMaxInfo);
+        HANDLE_MSG(hwnd, WM_CONTEXTMENU, OnContextMenu);
     }
     return 0;
 }
