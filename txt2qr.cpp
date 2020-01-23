@@ -1,3 +1,6 @@
+// txt2qr --- QR Code maker
+// Copyright (C) 2020 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
+// All Rights Reserved.
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
@@ -5,18 +8,19 @@
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <process.h>
+
 #include <string>
 #include <vector>
+
 #include <cstdlib>
 #include <csetjmp>
 #include <cassert>
+
+#include <png.h>
+
 #include "resource.h"
 
 #define MAX_TEXT 255
-
-#include <png.h>
-//#pragma comment(lib, "libpng.lib")
-//#pragma comment(lib, "zlib.lib")
 
 static HINSTANCE s_hInstance = NULL;
 static HICON s_hIcon = NULL;
