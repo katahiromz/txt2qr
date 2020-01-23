@@ -375,7 +375,7 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
     return szText;
 }
 
-unsigned __stdcall ProcessingFunc(void *arg)
+unsigned __stdcall DoThreadFunc(void *arg)
 {
     HWND hwnd = (HWND)arg;
     assert(s_bInProcessing);
@@ -449,10 +449,19 @@ unsigned __stdcall ProcessingFunc(void *arg)
     SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
 
     EnableWindow(GetDlgItem(hwnd, edt1), TRUE);
-    EnableWindow(GetDlgItem(hwnd, IDOK), TRUE);
-    EnableWindow(GetDlgItem(hwnd, psh1), TRUE);
     EnableWindow(GetDlgItem(hwnd, psh2), TRUE);
     EnableWindow(GetDlgItem(hwnd, IDCANCEL), TRUE);
+
+    if (szText[0] && s_hbm1)
+    {
+        EnableWindow(GetDlgItem(hwnd, IDOK), TRUE);
+        EnableWindow(GetDlgItem(hwnd, psh1), TRUE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
+        EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
+    }
 
     BOOL bUpdated = s_bUpdatedInProcessing;
     s_bInProcessing = FALSE;
@@ -468,6 +477,18 @@ unsigned __stdcall ProcessingFunc(void *arg)
 
 void OnEditChange(HWND hwnd)
 {
+    WCHAR sz[2];
+    if (GetDlgItemTextW(hwnd, edt1, sz, ARRAYSIZE(sz)) && sz[0])
+    {
+        EnableWindow(GetDlgItem(hwnd, IDOK), TRUE);
+        EnableWindow(GetDlgItem(hwnd, psh1), TRUE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
+        EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
+    }
+
     if (s_bInProcessing)
     {
         s_bUpdatedInProcessing = TRUE;
@@ -476,7 +497,7 @@ void OnEditChange(HWND hwnd)
     {
         s_bInProcessing = TRUE;
 
-        HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, ProcessingFunc, hwnd, 0, NULL);
+        HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, DoThreadFunc, hwnd, 0, NULL);
         CloseHandle(hThread);
     }
 }
@@ -551,6 +572,9 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     s_fnEditWndProc = SubclassWindow(GetDlgItem(hwnd, edt1), EditWindowProc);
 
     DragAcceptFiles(hwnd, TRUE);
+
+    EnableWindow(GetDlgItem(hwnd, IDOK), FALSE);
+    EnableWindow(GetDlgItem(hwnd, psh1), FALSE);
 
     INT argc = 0;
     LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
