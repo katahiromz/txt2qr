@@ -312,7 +312,7 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
 {
     WCHAR szText[MAX_TEXT + 1] = { 0 };
 
-    // UTF-8 BOM
+    // UTF-8 with BOM
     if (memcmp(pv, "\xEF\xBB\xBF", 3) == 0 && cb >= 3)
     {
         BYTE *pb = (BYTE *)pv;
@@ -325,7 +325,7 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
         }
     }
 
-    // UTF-16LE BOM
+    // UTF-16LE with BOM
     if (memcmp(pv, "\xFF\xFE", 2) == 0 && cb >= 2)
     {
         BYTE *pb = (BYTE *)pv;
@@ -334,7 +334,7 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
         return (LPWSTR)pb;
     }
 
-    // UTF-16BE BOM
+    // UTF-16BE with BOM
     if (memcmp(pv, "\xFE\xFF", 2) == 0 && cb >= 2)
     {
         BYTE *pb = (BYTE *)pv;
@@ -344,17 +344,20 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
         return (LPWSTR)pb;
     }
 
+    // UTF-8 without BOM
     if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPSTR)pv, cb,
                             szText, ARRAYSIZE(szText)))
     {
         return szText;
     }
 
+    // Unicode (Little Endian) without BOM
     if (IsTextUnicode(pv, cb, NULL))
     {
         return (LPWSTR)pv;
     }
 
+    // ANSI (Shift_JIS)
     ZeroMemory(szText, sizeof(szText));
     if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, (LPSTR)pv, cb,
                             szText, ARRAYSIZE(szText)))
@@ -362,7 +365,9 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
         return szText;
     }
 
-    return L"";
+    // UTF-8 without BOM
+    MultiByteToWideChar(CP_UTF8, 0, (LPSTR)pv, cb, szText, ARRAYSIZE(szText));
+    return szText;
 }
 
 unsigned __stdcall ProcessingFunc(void *arg)
@@ -477,16 +482,21 @@ BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
                                OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
+        MessageBoxW(hwnd, LoadStringDx(111), LoadStringDx(100), MB_ICONERROR);
         return FALSE;
     }
 
     BOOL bOK = FALSE;
     DWORD cb = GetFileSize(hFile, NULL);
-    if (cb > MAX_TEXT * sizeof(WCHAR))
-        cb = MAX_TEXT * sizeof(WCHAR);
+    if (cb > 3 + MAX_TEXT * sizeof(WCHAR))
+    {
+        CloseHandle(hFile);
+        MessageBoxW(hwnd, LoadStringDx(110), LoadStringDx(100), MB_ICONERROR);
+        return FALSE;
+    }
 
     DWORD cbRead;
-    BYTE ab[(MAX_TEXT + 1) * sizeof(WCHAR)] = { 0 };
+    BYTE ab[3 + (MAX_TEXT + 1) * sizeof(WCHAR)] = { 0 };
     if (ReadFile(hFile, ab, cb, &cbRead, NULL))
     {
         std::wstring str = DoReadBinaryText(hwnd, ab, cb);
@@ -495,6 +505,7 @@ BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
 
         SetDlgItemTextW(hwnd, edt1, str.c_str());
         Edit_SetSel(GetDlgItem(hwnd, edt1), 0, -1);
+        SendDlgItemMessage(hwnd, edt1, EM_SCROLLCARET, 0, 0);
         OnEditChange(hwnd);
         bOK = !str.empty();
     }

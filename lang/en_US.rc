@@ -40,6 +40,8 @@ STRINGTABLE
     107, "&Copy"
     108, "PNG Images (*.png)|*.png|All Files (*.*)|*.*|"
     109, "Save Image As"
+    110, "File is too large."
+    111, "Unable to open file."
 }
 
 //////////////////////////////////////////////////////////////////////////////
