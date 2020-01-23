@@ -1,28 +1,28 @@
-# QR�R�[�h�쐬�v���O���� txt2qr
+﻿# QRコード作成プログラム txt2qr
 
-���̃v���O�����́A255�����ȓ��̃e�L�X�g��QR�R�[�h�ɕϊ����܂��B
-URL�𖄂ߍ��ނ��Ƃ��\�ł��B
+このプログラムは、255文字以内のテキストをQRコードに変換します。
+URLを埋め込むことも可能です。
 
-## �g����
+## 使い方
 
-�v���O���� txt2qr.exe ���N������ƁA�_�C�A���O���\������܂��B
-�e�L�X�g����͂���΁AQR�R�[�h���\������܂��B
-�{�^���������΁A�N���b�v�{�[�h�ɃR�s�[������A
-PNG�摜�t�@�C���Ƃ��ĕۑ��ł��܂��B
+プログラム txt2qr.exe を起動すると、ダイアログが表示されます。
+テキストを入力すれば、QRコードが表示されます。
+ボタンを押せば、クリップボードにコピーしたり、
+PNG画像ファイルとして保存できます。
 
-## �����
+## 動作環境
 
 Windows Vista/7/10
 
-## �g�p����
+## 使用許諾
 
-txt2qr�́A�{�̉��i700�~�̃V�F�A�E�F�A�ł��B
-�x�N�^�[�ōw�����ĉ������B
+txt2qrは、本体価格700円のシェアウェアです。
+ベクターで購入して下さい。
 
-- �x�N�^�[ https://www.vector.co.jp/
+- ベクター https://www.vector.co.jp/
 
-## �A����
+## 連絡先
 
-- �ЎR����MZ�i������܂Ђ�ӂ݃G���[�b�h�j
-- �z�[���y�[�W https://katahiromz.web.fc2.com
-- ���[���A�h���X katayama.hirofumi.mz@gmail.com
+- 片山博文MZ（かたやまひろふみエムゼッド）
+- ホームページ https://katahiromz.web.fc2.com
+- メールアドレス katayama.hirofumi.mz@gmail.com
