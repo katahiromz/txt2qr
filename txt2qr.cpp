@@ -534,6 +534,17 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     SetForegroundWindow(hwnd);
 
+    INT cch = lstrlenW(szText);
+    if (cch)
+    {
+        wsprintfW(szText, LoadStringDx(IDS_CHARACTERS), cch);
+        SetDlgItemTextW(hwnd, stc2, szText);
+    }
+    else
+    {
+        SetDlgItemTextW(hwnd, stc2, NULL);
+    }
+
     BOOL bUpdated = s_bUpdatedInProcessing;
     s_bInProcessing = FALSE;
     s_bUpdatedInProcessing = FALSE;

@@ -17,6 +17,7 @@ FONT 11, "Tahoma"
     ICON IDI_MAIN, IDC_STATIC, 185, 10, 0, 0
     AUTOCHECKBOX "Japanese Shift &JIS", chx1, 140, 40, 75, 14, NOT WS_TABSTOP
     LTEXT "&Text:", IDC_STATIC, 5, 43, 60, 10
+    RTEXT "", stc2, 70, 43, 60, 10
     EDITTEXT edt1, 5, 55, 210, 60, ES_WANTRETURN | ES_AUTOVSCROLL | ES_MULTILINE | WS_VSCROLL
     CONTROL "", stc1, "STATIC", SS_CENTERIMAGE | SS_BITMAP, 5, 125, 100, 100
     DEFPUSHBUTTON "&Copy", IDOK, 110, 130, 105, 20
@@ -42,6 +43,7 @@ STRINGTABLE
     IDS_SAVEIMGAS, "Save Image As"
     IDS_FILETOOLARGE, "File is too large."
     IDS_CANTOPENFILE, "Unable to open file."
+    IDS_CHARACTERS, "(%u chars)"
 }
 
 //////////////////////////////////////////////////////////////////////////////

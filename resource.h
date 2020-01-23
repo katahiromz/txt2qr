@@ -21,6 +21,7 @@
 #define IDS_SAVEIMGAS                       109
 #define IDS_FILETOOLARGE                    110
 #define IDS_CANTOPENFILE                    111
+#define IDS_CHARACTERS                      112
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
