@@ -13,7 +13,7 @@ CAPTION "txt2qr 0.6 by 片山博文MZ"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
 FONT 11, "MS UI Gothic"
 {
-    LTEXT "このプログラムは、テキストデータをケータイ、スマホなどで読み込み可能なQRコードに変換します。URLを埋め込むことも可能です。", IDC_STATIC, 5, 5, 175, 30
+    LTEXT "このプログラムは、テキストデータをケータイ、スマホなどで読み込み可能なQRコードに変換します。URLを埋め込むことも可能です。文字数に制限があります。", IDC_STATIC, 5, 5, 175, 35
     ICON IDI_MAIN, IDC_STATIC, 185, 10, 0, 0
     AUTOCHECKBOX "日本語シフト&JIS", chx1, 140, 40, 75, 14, NOT WS_TABSTOP
     LTEXT "テキスト(&T):", IDC_STATIC, 5, 43, 60, 10
