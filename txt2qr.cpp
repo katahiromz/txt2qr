@@ -1,6 +1,8 @@
 // txt2qr --- QR Code maker
 // Copyright (C) 2020 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
 // All Rights Reserved.
+#define NOMINMAX
+#define STRICT
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
@@ -11,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include <cstdlib>
 #include <csetjmp>
@@ -475,10 +478,12 @@ unsigned __stdcall DoThreadFunc(void *arg)
         HWND hStc1 = GetDlgItem(hwnd, stc1);
         RECT rc;
         GetClientRect(hStc1, &rc);
+
         INT cxStc1 = rc.right - rc.left;
         INT cyStc1 = rc.bottom - rc.top;
+        INT cxyStc1 = std::min(cxStc1, cyStc1);
 
-        s_hbm2 = StretchImage(s_hbm1, cyStc1, cyStc1);
+        s_hbm2 = StretchImage(s_hbm1, cxyStc1, cxyStc1);
     } while (0);
 
     SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
@@ -798,10 +803,12 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
     HWND hStc1 = GetDlgItem(hwnd, stc1);
     RECT rc;
     GetClientRect(hStc1, &rc);
+
     INT cxStc1 = rc.right - rc.left;
     INT cyStc1 = rc.bottom - rc.top;
+    INT cxyStc1 = std::min(cxStc1, cyStc1);
+    s_hbm2 = StretchImage(s_hbm1, cxyStc1, cxyStc1);
 
-    s_hbm2 = StretchImage(s_hbm1, cyStc1, cyStc1);
     SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
 }
 
