@@ -61,10 +61,10 @@ STRINGTABLE
     IDS_ICASEASCII, "ASCII (Ignore case)"
     IDS_JPNSHIFTJIS, "日本語シフトJIS"
     IDS_8BIT, "8 ビット テキスト"
-    IDS_L, "最低品質"
+    IDS_L, "最低"
     IDS_M, "中"
-    IDS_Q, "高品質"
-    IDS_H, "最高品質"
+    IDS_Q, "高"
+    IDS_H, "最高"
 }
 
 //////////////////////////////////////////////////////////////////////////////
