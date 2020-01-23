@@ -18,9 +18,11 @@
 
 #include <png.h>
 
+#include "MSmoothLayout.hpp"
+
 #include "resource.h"
 
-#define MAX_TEXT 255
+#define MAX_TEXT 500
 #define TIMER_ID 999
 
 static HINSTANCE s_hInstance = NULL;
@@ -32,6 +34,9 @@ static HBITMAP s_hbm2 = NULL;
 static BOOL s_bInProcessing = FALSE;
 static BOOL s_bUpdatedInProcessing = FALSE;
 static WNDPROC s_fnEditWndProc = NULL;
+static MSmoothLayout s_layout;
+static INT s_cxMinTrack;
+static INT s_cyMinTrack;
 
 LPWSTR LoadStringDx(INT nID)
 {
@@ -202,8 +207,10 @@ BOOL DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile, BOOL bKan
     {
         WaitForSingleObject(info.hProcess, INFINITE);
         CloseHandle(info.hProcess);
+        SetForegroundWindow(hwnd);
         return TRUE;
     }
+    SetForegroundWindow(hwnd);
     return FALSE;
 }
 
@@ -313,6 +320,46 @@ void DoSwapEndian(LPBYTE pb, DWORD cb)
     }
 }
 
+HBITMAP StretchImage(HBITMAP hbm, INT cx, INT cy)
+{
+    HBITMAP ret = NULL;
+    if (!hbm)
+        return ret;
+
+    if (HDC hdc1 = CreateCompatibleDC(NULL))
+    {
+        BITMAPINFO bi;
+        ZeroMemory(&bi, sizeof(bi));
+        bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bi.bmiHeader.biWidth = cx;
+        bi.bmiHeader.biHeight = cy;
+        bi.bmiHeader.biPlanes = 1;
+        bi.bmiHeader.biBitCount = 24;
+
+        LPVOID pvBits;
+        ret = CreateDIBSection(hdc1, &bi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+        if (ret)
+        {
+            HGDIOBJ hbm1Old = SelectObject(hdc1, ret);
+            if (HDC hdc2 = CreateCompatibleDC(NULL))
+            {
+                BITMAP bm;
+                GetObject(hbm, sizeof(bm), &bm);
+                HGDIOBJ hbm2Old = SelectObject(hdc2, hbm);
+
+                SetStretchBltMode(hdc1, STRETCH_DELETESCANS);
+                StretchBlt(hdc1, 0, 0, cx, cy, hdc2, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+
+                SelectObject(hdc2, hbm2Old);
+                DeleteDC(hdc2);
+            }
+            SelectObject(hdc1, hbm1Old);
+        }
+        DeleteDC(hdc1);
+    }
+    return ret;
+}
+
 std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
 {
     WCHAR szText[MAX_TEXT + 1] = { 0 };
@@ -375,6 +422,8 @@ std::wstring DoReadBinaryText(HWND hwnd, LPVOID pv, DWORD cb)
     return szText;
 }
 
+void OnEditChange(HWND hwnd);
+
 unsigned __stdcall DoThreadFunc(void *arg)
 {
     HWND hwnd = (HWND)arg;
@@ -406,7 +455,6 @@ unsigned __stdcall DoThreadFunc(void *arg)
     {
         if (szText[0] == 0)
         {
-            s_hbm2 = CreateBitmap(1, 1, 1, 1, NULL);
             break;
         }
 
@@ -416,13 +464,11 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
         if (!DoExecuteQrEncode(hwnd, szText, s_szTempFile, bKanji))
         {
-            s_hbm2 = CreateBitmap(1, 1, 1, 1, NULL);
             break;
         }
 
         if (!PathFileExistsW(s_szTempFile))
         {
-            s_hbm2 = CreateBitmap(1, 1, 1, 1, NULL);
             break;
         }
 
@@ -431,19 +477,10 @@ unsigned __stdcall DoThreadFunc(void *arg)
         HWND hStc1 = GetDlgItem(hwnd, stc1);
         RECT rc;
         GetClientRect(hStc1, &rc);
-        INT cx = rc.right - rc.left, cy = rc.bottom - rc.top;
+        INT cxStc1 = rc.right - rc.left;
+        INT cyStc1 = rc.bottom - rc.top;
 
-        BITMAP bm;
-        GetObject(s_hbm1, sizeof(bm), &bm);
-
-        if (bm.bmWidth > cx || bm.bmHeight > cy)
-        {
-            s_hbm2 = (HBITMAP)CopyImage(s_hbm1, IMAGE_BITMAP, cy, cy, LR_CREATEDIBSECTION);
-        }
-        else
-        {
-            s_hbm2 = (HBITMAP)CopyImage(s_hbm1, IMAGE_BITMAP, bm.bmWidth, bm.bmHeight, LR_CREATEDIBSECTION);
-        }
+        s_hbm2 = StretchImage(s_hbm1, cyStc1, cyStc1);
     } while (0);
 
     SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
@@ -469,7 +506,7 @@ unsigned __stdcall DoThreadFunc(void *arg)
 
     if (bUpdated)
     {
-        PostMessage(hwnd, WM_COMMAND, psh5, 0);
+        OnEditChange(hwnd);
     }
 
     return 0;
@@ -496,7 +533,6 @@ void OnEditChange(HWND hwnd)
     else
     {
         s_bInProcessing = TRUE;
-
         HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, DoThreadFunc, hwnd, 0, NULL);
         CloseHandle(hThread);
     }
@@ -559,6 +595,13 @@ EditWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
+    RECT rc;
+    GetWindowRect(hwnd, &rc);
+    s_cxMinTrack = rc.right - rc.left;
+    s_cyMinTrack = rc.bottom - rc.top;
+
+    s_layout.init(hwnd);
+
     s_hIcon = LoadIcon(s_hInstance, MAKEINTRESOURCE(IDI_MAIN));
     s_hIconSmall = (HICON)LoadImageW(s_hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
         GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -566,7 +609,7 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)s_hIcon);
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)s_hIconSmall);
 
-    Edit_LimitText(GetDlgItem(hwnd, edt1), 255);
+    Edit_LimitText(GetDlgItem(hwnd, edt1), MAX_TEXT);
     CheckDlgButton(hwnd, chx1, BST_CHECKED);
 
     s_fnEditWndProc = SubclassWindow(GetDlgItem(hwnd, edt1), EditWindowProc);
@@ -714,9 +757,6 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             OnEditChange(hwnd);
         }
         break;
-    case psh5:
-        OnEditChange(hwnd);
-        break;
     }
 }
 
@@ -739,6 +779,32 @@ void OnDropFiles(HWND hwnd, HDROP hdrop)
     DragFinish(hdrop);
 }
 
+void OnSize(HWND hwnd, UINT state, int cx, int cy)
+{
+    s_layout.OnSize(cx, cy);
+
+    if (s_hbm2)
+    {
+        DeleteObject(s_hbm2);
+        s_hbm2 = NULL;
+    }
+
+    HWND hStc1 = GetDlgItem(hwnd, stc1);
+    RECT rc;
+    GetClientRect(hStc1, &rc);
+    INT cxStc1 = rc.right - rc.left;
+    INT cyStc1 = rc.bottom - rc.top;
+
+    s_hbm2 = StretchImage(s_hbm1, cyStc1, cyStc1);
+    SendDlgItemMessage(hwnd, stc1, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)s_hbm2);
+}
+
+void OnGetMinMaxInfo(HWND hwnd, LPMINMAXINFO lpMinMaxInfo)
+{
+    lpMinMaxInfo->ptMinTrackSize.x = s_cxMinTrack;
+    lpMinMaxInfo->ptMinTrackSize.y = s_cyMinTrack;
+}
+
 INT_PTR CALLBACK
 DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -748,6 +814,8 @@ DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
         HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
         HANDLE_MSG(hwnd, WM_DROPFILES, OnDropFiles);
+        HANDLE_MSG(hwnd, WM_SIZE, OnSize);
+        HANDLE_MSG(hwnd, WM_GETMINMAXINFO, OnGetMinMaxInfo);
     }
     return 0;
 }
