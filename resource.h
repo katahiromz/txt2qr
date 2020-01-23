@@ -9,6 +9,19 @@
 
 #define IDI_MAIN                            100
 
+#define IDS_APPNAME                         100
+#define IDS_VERSIONINFO                     101
+#define IDS_SAVEFAIL                        102
+#define IDS_EXECFAIL                        103
+#define IDS_COPYFAIL                        104
+#define IDS_INPUTTEXT                       105
+#define IDS_COPYED                          106
+#define IDS_COPY                            107
+#define IDS_PNGFILTER                       108
+#define IDS_SAVEIMGAS                       109
+#define IDS_FILETOOLARGE                    110
+#define IDS_CANTOPENFILE                    111
+
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1

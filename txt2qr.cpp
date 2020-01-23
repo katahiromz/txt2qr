@@ -21,6 +21,7 @@
 #include "resource.h"
 
 #define MAX_TEXT 255
+#define TIMER_ID 999
 
 static HINSTANCE s_hInstance = NULL;
 static HICON s_hIcon = NULL;
@@ -290,7 +291,7 @@ void DoShowPlaceHolder(HWND hwnd)
         HGDIOBJ hFontOld = SelectObject(hdc, hFont);
         COLORREF clrTextOld = SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
         INT nBkModeOld = SetBkMode(hdc, TRANSPARENT);
-        LPCWSTR pszText = LoadStringDx(105);
+        LPCWSTR pszText = LoadStringDx(IDS_INPUTTEXT);
         TextOutW(hdc, wLeftMargin, rc.top, pszText, lstrlenW(pszText));
         SetBkMode(hdc, nBkModeOld);
         SetTextColor(hdc, clrTextOld);
@@ -486,7 +487,7 @@ BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
                                OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        MessageBoxW(hwnd, LoadStringDx(111), LoadStringDx(100), MB_ICONERROR);
+        MessageBoxW(hwnd, LoadStringDx(IDS_CANTOPENFILE), LoadStringDx(IDS_APPNAME), MB_ICONERROR);
         return FALSE;
     }
 
@@ -495,7 +496,7 @@ BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
     if (cb > 3 + MAX_TEXT * sizeof(WCHAR))
     {
         CloseHandle(hFile);
-        MessageBoxW(hwnd, LoadStringDx(110), LoadStringDx(100), MB_ICONERROR);
+        MessageBoxW(hwnd, LoadStringDx(IDS_FILETOOLARGE), LoadStringDx(IDS_APPNAME), MB_ICONERROR);
         return FALSE;
     }
 
@@ -619,12 +620,12 @@ void OnCopy(HWND hwnd)
 
     if (bOK)
     {
-        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(106));
-        SetTimer(hwnd, 999, 2000, NULL);
+        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(IDS_COPYED));
+        SetTimer(hwnd, TIMER_ID, 2000, NULL);
     }
     else
     {
-        MessageBoxW(hwnd, LoadStringDx(104), LoadStringDx(100), MB_ICONERROR);
+        MessageBoxW(hwnd, LoadStringDx(IDS_COPYFAIL), LoadStringDx(IDS_APPNAME), MB_ICONERROR);
     }
 }
 
@@ -636,10 +637,10 @@ void OnSaveAs(HWND hwnd)
     WCHAR szFile[MAX_PATH] = L"";
     OPENFILENAMEW ofn = { OPENFILENAME_SIZE_VERSION_400W };
     ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter = MakeFilterDx(LoadStringDx(108));
+    ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_PNGFILTER));
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = ARRAYSIZE(szFile);
-    ofn.lpstrTitle = LoadStringDx(109);
+    ofn.lpstrTitle = LoadStringDx(IDS_SAVEIMGAS);
     ofn.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT |
                 OFN_PATHMUSTEXIST | OFN_ENABLESIZING;
     ofn.lpstrDefExt = L"png";
@@ -647,7 +648,7 @@ void OnSaveAs(HWND hwnd)
     {
         if (!CopyFileW(s_szTempFile, szFile, FALSE))
         {
-            MessageBoxW(hwnd, LoadStringDx(102), LoadStringDx(100), MB_ICONERROR);
+            MessageBoxW(hwnd, LoadStringDx(IDS_SAVEFAIL), LoadStringDx(IDS_APPNAME), MB_ICONERROR);
         }
     }
 }
@@ -660,8 +661,8 @@ void OnAbout(HWND hwnd)
     MSGBOXPARAMS params = { sizeof(params) };
     params.hwndOwner = hwnd;
     params.hInstance = s_hInstance;
-    params.lpszText = LoadStringDx(101);
-    params.lpszCaption = LoadStringDx(100);
+    params.lpszText = LoadStringDx(IDS_VERSIONINFO);
+    params.lpszCaption = LoadStringDx(IDS_APPNAME);
     params.dwStyle = MB_USERICON;
     params.lpszIcon = MAKEINTRESOURCE(IDI_MAIN);
     MessageBoxIndirectW(&params);
@@ -697,9 +698,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnTimer(HWND hwnd, UINT id)
 {
-    if (id == 999)
+    if (id == TIMER_ID)
     {
-        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(107));
+        SetDlgItemTextW(hwnd, IDOK, LoadStringDx(IDS_COPY));
         SetFocus(GetDlgItem(hwnd, edt1));
     }
 }

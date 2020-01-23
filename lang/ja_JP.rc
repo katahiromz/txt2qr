@@ -30,18 +30,18 @@ FONT 10, "MS UI Gothic"
 
 STRINGTABLE
 {
-    100, "txt2qr"
-    101, "txt2qr バージョン 0.6\r\n\r\nCopyright (C) 2020 片山博文MZ. All Rights Reserved."
-    102, "保存に失敗しました。"
-    103, "qrencode の実行に失敗しました。"
-    104, "コピーに失敗しました。"
-    105, "ここにテキストを入力して下さい"
-    106, "コピーしました。"
-    107, "コピー(&C)"
-    108, "PNG 画像 (*.png)|*.png|すべてのファイル (*.*)|*.*|"
-    109, "画像に名前を付けて保存"
-    110, "ファイルが大きすぎます。"
-    111, "ファイルが開けません。"
+    IDS_APPNAME, "txt2qr"
+    IDS_VERSIONINFO, "txt2qr バージョン 0.6\r\n\r\nCopyright (C) 2020 片山博文MZ. All Rights Reserved."
+    IDS_SAVEFAIL, "保存に失敗しました。"
+    IDS_EXECFAIL, "qrencode の実行に失敗しました。"
+    IDS_COPYFAIL, "コピーに失敗しました。"
+    IDS_INPUTTEXT, "ここにテキストを入力して下さい"
+    IDS_COPYED, "コピーしました。"
+    IDS_COPY, "コピー(&C)"
+    IDS_PNGFILTER, "PNG 画像 (*.png)|*.png|すべてのファイル (*.*)|*.*|"
+    IDS_SAVEIMGAS, "画像に名前を付けて保存"
+    IDS_FILETOOLARGE, "ファイルが大きすぎます。"
+    IDS_CANTOPENFILE, "ファイルが開けません。"
 }
 
 //////////////////////////////////////////////////////////////////////////////
