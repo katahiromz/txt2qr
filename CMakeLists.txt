@@ -7,15 +7,12 @@
 cmake_minimum_required(VERSION 2.4)
 
 # project name and languages
-project(txt2qr C CXX)
+project(txt2qr LANGUAGES C CXX RC)
 
 # set output directory (build/)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-
-# enable Win32 resource
-enable_language(RC)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang

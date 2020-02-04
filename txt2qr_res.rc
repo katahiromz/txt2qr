@@ -17,6 +17,45 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDI_MAIN ICON "res/Icon_100.ico"
 
 //////////////////////////////////////////////////////////////////////////////
+// RT_VERSION
+
+1 VERSIONINFO
+FILEVERSION     0, 6, 0, 0
+PRODUCTVERSION  0, 6, 0, 0
+FILEOS          0x40004
+FILETYPE        0x1
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904E4"
+        {
+            VALUE "CompanyName", "Katayama Hirofumi MZ\0"
+            VALUE "FileDescription", "txt2qr\0"
+            VALUE "FileVersion", "0.6\0"
+            VALUE "LegalCopyright", "Copyright (C) 2020 Katayama Hirofumi MZ. All rights reserved.\0"
+            VALUE "ProductName", "txt2qr\0"
+            VALUE "ProductVersion", "0.6\0"
+        }
+    }
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "041103A4"
+        {
+            VALUE "CompanyName", "片山博文MZ\0"
+            VALUE "FileDescription", "txt2qr\0"
+            VALUE "FileVersion", "0.6\0"
+            VALUE "LegalCopyright", "Copyright (C) 2020 片山博文MZ. All rights reserved.\0"
+            VALUE "ProductName", "txt2qr\0"
+            VALUE "ProductVersion", "0.6\0"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 0x04E4
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // RT_MANIFEST
 
 #ifndef MSVC
