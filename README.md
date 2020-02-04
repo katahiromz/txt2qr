@@ -16,10 +16,10 @@ Windows Vista/7/10
 
 ## 使用許諾
 
-txt2qrは、本体価格700円のシェアウェアです。
-ベクターで購入して下さい。
+txt2qrは、本体価格700円のシェアウェアです。700円の他に手数料と消費税が付きます。
+試用後、気に入った場合はベクターのtxt2qrのページで購入して下さい。
 
-- ベクター https://www.vector.co.jp/
+- txt2qrのページ https://www.vector.co.jp/soft/winnt/writing/se520816.html
 
 ## 連絡先
 
