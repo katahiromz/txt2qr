@@ -876,19 +876,27 @@ void OnSaveAs(HWND hwnd)
     }
 }
 
-void OnAbout(HWND hwnd)
+void OnOpenReadMe(HWND hwnd)
 {
     if (s_bInProcessing)
         return;
 
-    MSGBOXPARAMS params = { sizeof(params) };
-    params.hwndOwner = hwnd;
-    params.hInstance = s_hInstance;
-    params.lpszText = LoadStringDx(IDS_VERSIONINFO);
-    params.lpszCaption = LoadStringDx(IDS_APPNAME);
-    params.dwStyle = MB_USERICON;
-    params.lpszIcon = MAKEINTRESOURCE(IDI_MAIN);
-    MessageBoxIndirectW(&params);
+    TCHAR szPath[MAX_PATH];
+    GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
+    PathRemoveFileSpec(szPath);
+    PathAppend(szPath, TEXT("README.txt"));
+    if (!PathFileExists(szPath))
+    {
+        PathRemoveFileSpec(szPath);
+        PathAppend(szPath, TEXT("..\\README.txt"));
+        if (!PathFileExists(szPath))
+        {
+            PathRemoveFileSpec(szPath);
+            PathAppend(szPath, TEXT("..\\..\\README.txt"));
+        }
+    }
+
+    ShellExecute(hwnd, NULL, szPath, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -908,7 +916,7 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         OnSaveAs(hwnd);
         break;
     case psh2:
-        OnAbout(hwnd);
+        OnOpenReadMe(hwnd);
         break;
     case edt1:
         if (codeNotify == EN_CHANGE)
