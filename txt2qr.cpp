@@ -22,7 +22,7 @@
 #include <png.h>
 
 #include "MSmoothLayout.hpp"
-
+#include "QR_Read.hpp"
 #include "resource.h"
 
 #define MAX_TEXT 500
@@ -294,12 +294,6 @@ DoExecuteQrEncode(HWND hwnd, LPCWSTR pszText, LPCWSTR pszOutFile,
     }
     return FALSE;
 }
-
-typedef struct tagBITMAPINFOEX
-{
-    BITMAPINFOHEADER bmiHeader;
-    RGBQUAD          bmiColors[256];
-} BITMAPINFOEX, FAR * LPBITMAPINFOEX;
 
 BOOL DoGetDIBFromBitmap(std::vector<BYTE>& dib, HBITMAP hbm)
 {
@@ -680,6 +674,51 @@ BOOL DoOpenTextFile(HWND hwnd, LPCWSTR pszFileName)
     return TRUE;
 }
 
+BOOL DoOpenImageFile(HWND hwnd, LPCWSTR pszFileName)
+{
+    QR_CALLBACK callback;
+    if (QR_ReadFile(pszFileName, callback))
+    {
+        auto& data = callback.m_strs[0];
+        if (data.empty() || data.size() >= 0x1000)
+            return FALSE;
+
+        std::wstring str = DoReadBinaryText(hwnd, &data[0], DWORD(data.size()));
+        if (str.size() > MAX_TEXT)
+            str.resize(MAX_TEXT);
+
+        SetDlgItemTextW(hwnd, edt1, str.c_str());
+        Edit_SetSel(GetDlgItem(hwnd, edt1), 0, -1);
+        SendDlgItemMessage(hwnd, edt1, EM_SCROLLCARET, 0, 0);
+        OnEditChange(hwnd);
+        return !str.empty();
+    }
+
+    return TRUE;
+}
+
+BOOL DoOpenFile(HWND hwnd, LPCWSTR pszFileName)
+{
+    LPTSTR pchDotExt = PathFindExtension(pszFileName);
+
+    if (lstrcmpi(pchDotExt, TEXT(".txt")) == 0)
+        return DoOpenTextFile(hwnd, pszFileName);
+
+    if (lstrcmpi(pchDotExt, TEXT(".bmp")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".png")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".jpg")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".jpeg")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".gif")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".tif")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".tiff")) == 0 ||
+        lstrcmpi(pchDotExt, TEXT(".dib")) == 0)
+    {
+        return DoOpenImageFile(hwnd, pszFileName);
+    }
+
+    return FALSE;
+}
+
 LRESULT CALLBACK
 EditWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -907,7 +946,7 @@ void OnDropFiles(HWND hwnd, HDROP hdrop)
     szFile[0] = 0;
     DragQueryFileW(hdrop, 0, szFile, ARRAYSIZE(szFile));
 
-    DoOpenTextFile(hwnd, szFile);
+    DoOpenFile(hwnd, szFile);
     DragFinish(hdrop);
 }
 
@@ -982,16 +1021,22 @@ WinMain(HINSTANCE   hInstance,
         LPSTR       lpCmdLine,
         INT         nCmdShow)
 {
-    s_hInstance = hInstance;
-    InitCommonControls();
-    srand(GetTickCount());
-    DoGetTempPathName(s_szTempFile);
+    ULONG_PTR gdiplusToken;
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, 0);
+    {
+        s_hInstance = hInstance;
+        InitCommonControls();
+        srand(GetTickCount());
 
-    DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, DialogProc);
+        DoGetTempPathName(s_szTempFile);
 
-    DeleteFileW(s_szTempFile);
-    DeleteObject(s_hbm1);
-    DeleteObject(s_hbm2);
+        DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, DialogProc);
 
+        DeleteFileW(s_szTempFile);
+        DeleteObject(s_hbm1);
+        DeleteObject(s_hbm2);
+    }
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return 0;
 }

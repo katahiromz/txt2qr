@@ -6,8 +6,14 @@
 # CMake minimum version
 cmake_minimum_required(VERSION 2.4)
 
+# CMake policy
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+    cmake_policy(SET CMP0048 NEW)
+endif(COMMAND cmake_policy)
+
 # project name and languages
-project(txt2qr LANGUAGES C CXX RC)
+project(txt2qr VERSION 0.6 LANGUAGES C CXX RC)
 
 # set output directory (build/)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
@@ -46,17 +52,16 @@ endif()
 
 # libpng
 find_package(PNG REQUIRED)
-include_directories(${PNG_INCLUDE_DIR})
+include_directories(${PNG_INCLUDE_DIR} zbar/include)
+
+# subdirectories
+subdirs(zbar libqrencode)
 
 # Unicode
 add_definitions(-DUNICODE -D_UNICODE ${PNG_DEFINITIONS})
 
 # txt2qr.exe
 add_executable(txt2qr WIN32 txt2qr.cpp txt2qr_res.rc)
-target_link_libraries(txt2qr comctl32 comdlg32 shlwapi ${PNG_LIBRARIES})
-
-##############################################################################
-
-subdirs(libqrencode)
+target_link_libraries(txt2qr comctl32 comdlg32 shlwapi gdi32 zbar gdiplus ${PNG_LIBRARIES})
 
 ##############################################################################

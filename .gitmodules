@@ -1,3 +1,6 @@
 [submodule "libqrencode"]
 	path = libqrencode
 	url = https://github.com/katahiromz/libqrencode
+[submodule "zbar"]
+	path = zbar
+	url = https://github.com/katahiromz/zbar.git
