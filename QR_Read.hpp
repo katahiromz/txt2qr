@@ -77,7 +77,8 @@ QR_ReadRaw(LONG width, LONG height, void *raw, T_CALLBACK& callback, LPARAM lPar
     scanner.set_config(zbar::ZBAR_QRCODE, zbar::ZBAR_CFG_ENABLE, 1);
     int n = scanner.scan(image);
 
-    for (auto symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol)
+    for (zbar::Image::SymbolIterator symbol = image.symbol_begin();
+         symbol != image.symbol_end(); ++symbol)
     {
         if (!callback(symbol, lParam))
             return false;

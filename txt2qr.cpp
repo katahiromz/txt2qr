@@ -679,7 +679,7 @@ BOOL DoOpenImageFile(HWND hwnd, LPCWSTR pszFileName)
     QR_CALLBACK callback;
     if (QR_ReadFile(pszFileName, callback))
     {
-        auto& data = callback.m_strs[0];
+        std::string& data = callback.m_strs[0];
         if (data.empty() || data.size() >= 0x1000)
             return FALSE;
 
