@@ -779,7 +779,7 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argc >= 2)
     {
-        DoOpenTextFile(hwnd, wargv[1]);
+        DoOpenFile(hwnd, wargv[1]);
     }
     LocalFree(wargv);
 
