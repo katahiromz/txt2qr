@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "txt2qr"
-#define MyAppVersion "0.6"
+#define MyAppVersion "0.7"
 #define MyAppPublisher "Katayama Hirofumi MZ"
 #define MyAppURL "https://katahiromz.web.fc2.com"
 #define MyAppExeName "txt2qr.exe"
@@ -41,10 +41,12 @@ Source: "build\qrencode.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "HISTORY.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\msys32\libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\msys32\libpng16-16.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\msys32\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\msys32\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\msys32\libgcc_s_dw2-1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\msys32\libiconv-2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\msys32\libpng16-16.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\msys32\libstdc++-6.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\msys32\libwinpthread-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

@@ -19,8 +19,6 @@
 #include <csetjmp>
 #include <cassert>
 
-#include <png.h>
-
 #include "MSmoothLayout.hpp"
 #include "QR_Read.hpp"
 #include "resource.h"
@@ -670,7 +668,7 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     s_layout.init(hwnd);
 
     s_hIcon = LoadIcon(s_hInstance, MAKEINTRESOURCE(IDI_MAIN));
-    s_hIconSmall = (HICON)LoadImageW(s_hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
+    s_hIconSmall = (HICON)LoadImage(s_hInstance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
         GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)s_hIcon);
