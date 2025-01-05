@@ -127,102 +127,26 @@ BOOL DoGetTempPathName(LPWSTR pszPath)
     return TRUE;
 }
 
-#define WIDTHBYTES(i) (((i) + 31) / 32 * 4)
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
 
 HBITMAP DoLoadPngAsBitmap(LPCWSTR pszFileName)
 {
-    FILE            *inf;
-    HBITMAP         hbm;
-    png_structp     png;
-    png_infop       info;
-    png_uint_32     y, width, height, rowbytes;
-    int             color_type, depth, widthbytes;
-    double          gamma;
-    BITMAPINFO      bi;
-    BYTE            *pbBits;
-    png_bytepp      row_pointers;
+    Gdiplus::GdiplusStartupInput gdiPlusStartupInput;
+    ULONG_PTR gdiPlusToken;
+    Gdiplus::GdiplusStartup(&gdiPlusToken, &gdiPlusStartupInput, nullptr);
 
-    inf = _wfopen(pszFileName, L"rb");
-    if (inf == NULL)
-        return NULL;
-
-    png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (png == NULL)
+    Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromFile(pszFileName, FALSE);
+    HBITMAP hBitmap = nullptr;
+    
+    if (bitmap)
     {
-        fclose(inf);
-        return NULL;
+        bitmap->GetHBITMAP(Gdiplus::Color(0, 0, 0), &hBitmap);
+        delete bitmap;
     }
 
-    info = png_create_info_struct(png);
-    if (info == NULL || setjmp(png_jmpbuf(png)))
-    {
-        png_destroy_read_struct(&png, NULL, NULL);
-        fclose(inf);
-        return NULL;
-    }
-
-    if (setjmp(png_jmpbuf(png)))
-    {
-        png_destroy_read_struct(&png, &info, NULL);
-        fclose(inf);
-        return NULL;
-    }
-
-    png_init_io(png, inf);
-    png_read_info(png, info);
-
-    png_get_IHDR(png, info, &width, &height, &depth, &color_type,
-                 NULL, NULL, NULL);
-    png_set_strip_16(png);
-    png_set_gray_to_rgb(png);
-    png_set_palette_to_rgb(png);
-    png_set_bgr(png);
-    png_set_packing(png);
-    if (png_get_gAMA(png, info, &gamma))
-        png_set_gamma(png, 2.2, gamma);
-    else
-        png_set_gamma(png, 2.2, 0.45455);
-
-    png_read_update_info(png, info);
-    png_get_IHDR(png, info, &width, &height, &depth, &color_type,
-                 NULL, NULL, NULL);
-
-    rowbytes = png_get_rowbytes(png, info);
-    row_pointers = (png_bytepp)malloc(height * sizeof(png_bytep));
-    for (y = 0; y < height; y++)
-    {
-        row_pointers[y] = (png_bytep)png_malloc(png, rowbytes);
-    }
-
-    png_read_image(png, row_pointers);
-    png_read_end(png, NULL);
-    fclose(inf);
-
-    ZeroMemory(&bi.bmiHeader, sizeof(BITMAPINFOHEADER));
-    bi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-    bi.bmiHeader.biWidth       = width;
-    bi.bmiHeader.biHeight      = height;
-    bi.bmiHeader.biPlanes      = 1;
-    bi.bmiHeader.biBitCount    = depth * png_get_channels(png, info);
-
-    hbm = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (VOID **)&pbBits, 
-                           NULL, 0);
-    if (hbm == NULL)
-    {
-        png_destroy_read_struct(&png, &info, NULL);
-        return NULL;
-    }
-
-    widthbytes = WIDTHBYTES(width * bi.bmiHeader.biBitCount);
-    for(y = 0; y < height; y++)
-    {
-        CopyMemory(pbBits + y * widthbytes, 
-                   row_pointers[height - 1 - y], rowbytes);
-    }
-
-    png_destroy_read_struct(&png, &info, NULL);
-    free(row_pointers);
-    return hbm;
+    Gdiplus::GdiplusShutdown(gdiPlusToken);
+    return hBitmap;
 }
 
 BOOL
